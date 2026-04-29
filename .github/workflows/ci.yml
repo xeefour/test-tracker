@@ -25,13 +25,10 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Run migrations
-        run: npx prisma db push --skip-reset
-        env:
-          DATABASE_URL: ":memory:"
-
       - name: Run tests
         run: npm test
+        env:
+          DATABASE_URL: ":memory:"
 
   build:
     runs-on: ubuntu-latest
