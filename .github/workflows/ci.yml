@@ -71,5 +71,5 @@ jobs:
           git config --local user.name "GitHub Actions"
           git fetch origin master
           git checkout master
-          git merge developer --no-edit
+          git merge developer --no-edit --allow-unrelated-histories
           git push origin master
