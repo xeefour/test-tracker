@@ -10,8 +10,8 @@ dist/
 *.db-wal
 prisma/dev.db
 
-# Prisma generated client (can regenerate with npx prisma generate)
-# /src/generated/prisma/
+# Prisma generated client (regenerate with npx prisma generate)
+/src/generated/prisma/
 
 # Environment
 .env

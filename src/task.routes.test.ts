@@ -2,7 +2,7 @@ import request from 'supertest';
 import express, { Express } from 'express';
 import { taskRouter } from './task.routes';
 import { createTask, deleteTask, listTasks } from './db/task.repository';
-import { PrismaClient } from './generated/prisma';
+import { PrismaClient } from './generated/prisma/client';
 import { PrismaLibSql } from '@prisma/adapter-libsql';
 
 let app: Express;
