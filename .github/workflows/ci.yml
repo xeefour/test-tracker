@@ -26,9 +26,9 @@ jobs:
         run: npx prisma generate
 
       - name: Run migrations
-        run: npx prisma migrate deploy
+        run: npx prisma db push --skip-reset
         env:
-          DATABASE_URL: file:./dev.db
+          DATABASE_URL: ":memory:"
 
       - name: Run tests
         run: npm test

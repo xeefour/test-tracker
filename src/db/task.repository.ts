@@ -2,12 +2,25 @@ import { PrismaClient } from '../generated/prisma/client';
 import { PrismaLibSql } from '@prisma/adapter-libsql';
 import { Task, CreateTaskInput, UpdateTaskInput } from '../task.types';
 
-const dbUrl = process.env.DATABASE_URL || 'file:./dev.db';
-const adapter = new PrismaLibSql({ url: dbUrl });
-const prisma = new PrismaClient({ adapter });
+let prisma: PrismaClient | null = null;
+
+function getPrisma(): PrismaClient {
+  if (prisma) return prisma;
+
+  const dbUrl = process.env.DATABASE_URL || 'file:./dev.db';
+  const adapter = new PrismaLibSql({ url: dbUrl });
+  prisma = new PrismaClient({ adapter });
+  return prisma;
+}
+
+export function createPrismaClient(url?: string): PrismaClient {
+  const dbUrl = url || process.env.DATABASE_URL || 'file:./dev.db';
+  const adapter = new PrismaLibSql({ url: dbUrl });
+  return new PrismaClient({ adapter });
+}
 
 export async function createTask(input: CreateTaskInput): Promise<Task> {
-  const task = await prisma.task.create({
+  const task = await getPrisma().task.create({
     data: {
       title: input.title,
       description: input.description || '',
@@ -17,17 +30,17 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
 }
 
 export async function getTask(id: string): Promise<Task | null> {
-  const task = await prisma.task.findUnique({ where: { id } });
+  const task = await getPrisma().task.findUnique({ where: { id } });
   return task ? mapToTask(task) : null;
 }
 
 export async function listTasks(): Promise<Task[]> {
-  const tasks = await prisma.task.findMany({ orderBy: { createdAt: 'desc' } });
+  const tasks = await getPrisma().task.findMany({ orderBy: { createdAt: 'desc' } });
   return tasks.map(mapToTask);
 }
 
 export async function updateTask(input: UpdateTaskInput): Promise<Task | null> {
-  const task = await prisma.task.update({
+  const task = await getPrisma().task.update({
     where: { id: input.id },
     data: {
       title: input.title,
@@ -40,7 +53,7 @@ export async function updateTask(input: UpdateTaskInput): Promise<Task | null> {
 
 export async function deleteTask(id: string): Promise<boolean> {
   try {
-    await prisma.task.delete({ where: { id } });
+    await getPrisma().task.delete({ where: { id } });
     return true;
   } catch {
     return false;
