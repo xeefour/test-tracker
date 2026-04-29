@@ -25,10 +25,15 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Setup test database
+        run: npx prisma db push --accept-data-loss --schema=prisma/schema.prisma
+        env:
+          DATABASE_URL: "file:./test.db"
+
       - name: Run tests
         run: npm test
         env:
-          DATABASE_URL: ":memory:"
+          DATABASE_URL: "file:./test.db"
 
   build:
     runs-on: ubuntu-latest
