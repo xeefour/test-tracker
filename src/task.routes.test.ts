@@ -13,7 +13,7 @@ beforeAll(() => {
   app.use(express.json());
   app.use('/tasks', taskRouter);
 
-  const adapter = new PrismaLibSql({ url: 'file:./dev.db' });
+  const adapter = new PrismaLibSql({ url: process.env.DATABASE_URL || 'file:./dev.db' });
   prisma = new PrismaClient({ adapter });
 });
 
