@@ -1,0 +1,27 @@
+name: tracker
+
+# Production stack: API server with a persistent SQLite file volume.
+# The frontend is served by a separate web server / CDN in production.
+#
+# Usage:
+#   docker compose -f docker-compose.yml up -d --build
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: tracker-server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: file:/data/dev.db
+    expose:
+      - "3000"
+    volumes:
+      - sqlite-data:/data
+
+volumes:
+  sqlite-data:
+    name: tracker-sqlite-data

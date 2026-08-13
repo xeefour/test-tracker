@@ -1,0 +1,75 @@
+name: tracker-dev
+
+# Development stack: API server + Vite frontend.
+# SQLite (libsql) runs as a local file inside the server container.
+# Server and web run with hot-reload via volume mounts for source code.
+#
+# - server:   accessible at localhost:3000
+# - web:      accessible at localhost:5173  ← Vite HMR dev server
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d --build
+#
+# Then open http://localhost:5173 in your browser.
+# Server source is mounted from ./apps/server/src — tsx watch picks up changes live.
+# Web source is mounted from ./apps/web/src   — Vite HMR picks up changes live.
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+      target: dev
+    container_name: tracker-server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: file:/data/dev.db
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000}
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    # Watch server source files on the host and restart tsx when they change.
+    # src/generated is NOT mounted — it must stay inside the container (written at build time by prisma generate).
+    # The full src/ dir WOULD work, but would shadow src/generated. Use targeted mounts instead.
+    volumes:
+      - ./apps/server/src/server.ts:/app/apps/server/src/server.ts
+      - ./apps/server/src/task.routes.ts:/app/apps/server/src/task.routes.ts
+      - ./apps/server/src/task.types.ts:/app/apps/server/src/task.types.ts
+      - ./apps/server/src/task.routes.test.ts:/app/apps/server/src/task.routes.test.ts
+      - ./apps/server/src/db:/app/apps/server/src/db
+      - ./apps/server/prisma:/app/apps/server/prisma:ro
+      # Persist the dev SQLite file across container restarts.
+      - sqlite-data:/data
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: dev
+    container_name: tracker-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-5173}:5173"
+    volumes:
+      # Mount individual files/dirs so Vite can HMR on changes.
+      # The image's /app/apps/web/node_modules stays intact (not shadowed).
+      - ./apps/web/src:/app/apps/web/src
+      - ./apps/web/index.html:/app/apps/web/index.html
+      - ./apps/web/vite.config.ts:/app/apps/web/vite.config.ts
+      - ./apps/web/tsconfig.json:/app/apps/web/tsconfig.json
+      - ./apps/web/tsconfig.node.json:/app/apps/web/tsconfig.node.json
+      - ./apps/web/jest.config.js:/app/apps/web/jest.config.js
+      # tsconfig.base.json lives at root /app/ in the image. Mount it so the
+      # web tsconfig (extends "../../tsconfig.base.json") resolves correctly.
+      - ./tsconfig.base.json:/app/tsconfig.base.json:ro
+    environment:
+      # Vite proxy target: server is reachable as tracker-server in Docker network.
+      VITE_API_URL: http://tracker-server:3000
+
+# Volume mount only specific paths so src/generated stays intact inside the container
+# (it was written there during `npx prisma generate` at build time).
+# Prisma schema changes require a rebuild + restart.
+volumes:
+  sqlite-data:
+    name: tracker-sqlite-data

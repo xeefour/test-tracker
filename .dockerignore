@@ -1,9 +1,13 @@
 node_modules
 .git
 .github
+.gitignore
+.env
 *.log
 coverage
-.env
 *.db
 dist
 tmp
+.opencode
+.harness
+README.md

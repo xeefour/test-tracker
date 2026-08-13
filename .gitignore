@@ -1,17 +1,20 @@
 # Dependencies
 node_modules/
+*/node_modules/
 
 # Build output
 dist/
+*/dist/
+.vite/
+*/.vite/
 
-# Database
+# Prisma generated client (regenerate with `npm run db:generate`)
+apps/server/src/generated/
+
+# Local SQLite database files
 *.db
 *.db-shm
 *.db-wal
-prisma/dev.db
-
-# Prisma generated client (regenerate with npx prisma generate)
-/src/generated/prisma/
 
 # Environment
 .env
@@ -34,7 +37,14 @@ npm-debug.log*
 
 # Test coverage
 coverage/
+*/coverage/
 
-# Temporary files
+# Temporary
 tmp/
 temp/
+
+# Local tooling artifacts (dev logs, archived migrations, agent scratch)
+.harness/
+
+# Git worktree checkouts (managed by `git worktree`)
+.worktrees/

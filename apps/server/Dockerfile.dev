@@ -1,0 +1,3 @@
+# DEPRECATED — merged into apps/server/Dockerfile as `target: dev`.
+# docker-compose.dev.yml now targets apps/server/Dockerfile with target: dev.
+# Keeping this file for reference only.
